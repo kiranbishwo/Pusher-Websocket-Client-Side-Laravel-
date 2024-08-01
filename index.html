@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laravel Echo with BeyondCode WebSockets</title>
+</head>
+<body>
+    <!-- Include Axios, Pusher, and Laravel Echo via CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://js.pusher.com/7.0/pusher.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/laravel-echo/1.11.1/echo.iife.js"></script>
+    <script>
+        // Axios configuration
+        window.axios = axios;
+        window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+
+        // Pusher and Echo configuration
+        window.Pusher = Pusher;
+        window.Echo = new Echo({
+            broadcaster: 'pusher',
+            key: '2fba2d432c0ff8fe10fa', // Replace with your actual app key from .env
+            cluster: 'mt1', // This is not used by BeyondCode WebSockets but still required
+            wsHost: 'udaanacademy.com.np',
+            wsPort: 6001,
+            wssPort: 6001,
+            forceTLS: true, // Set to false if you are not using HTTPS
+            encrypted: true,
+            disableStats: true,
+            enabledTransports: ['ws', 'wss'],
+            authEndpoint: 'https://udaanacademy.com.np/api/broadcasting/auth',
+            auth: {
+                headers: {
+                    Authorization: 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIxODc1IiwianRpIjoiOTIwNDFkZWIwYTYwOTU1NDM5ZjhhZjYzNTUxYzRiOTNiOGExNThjMzc1MDViZjYxOWY5YTU3MzMwYjBiYTk0YTY0YTM1OTRmMTllNTc0NDIiLCJpYXQiOjE3MjI1MzcwMDIuNjg0MjQsIm5iZiI6MTcyMjUzNzAwMi42ODQyNDUsImV4cCI6MTc1NDA3MzAwMi41NTk5MjgsInN1YiI6IjIiLCJzY29wZXMiOltdfQ.BErbhErj4l3nxj2v-AQCFD10k8TvUKzRvCEdtX1hf0WrMqJ9UYuz67NbY0ovT10-RBtJQ_2z6XvOuELCh-nqpc2dSZY-EBXwcKxGoi2E0c9ZvNiE0DDMOs26th8kxFBTJlNANumAjaRbGa2hOeoQJW4afJaLmeb_KBuVZI7Jc7x7Dxf6CWlgJJFtUoRKy4HA2RKR7TjpAj1lMxV_hTDgFdFsJk84zmz6PJsLnnmgy27ty9wVCOn4ycAcgQ5cABPp_j2YpR9_vvr-j6Cz605U1EbG1bbZZ28IXg9ei6Qc0kGShxtUPi0jmRxmQXYhx5Iy5rAFFpqOUneojurY80z2G_dWCo-etEzWfmlPtTHgoYDu4QOEiPJS9TUNVHzlH6UfTm62REETZA60RP2KEyrZ2DlrjlqXvIpC4Ud2BGNG3XkSysjaN78kbvj-VAaHNblhJOIml_yRyU8rGOli6eZyeT7tYnVgUobOuhsMpH1angZ7mKDcJrXuhyXpnog-MP2yeVv0fZsOel5IkJMbYtUObe1-CnDzVn9ItbRcu9E3fsZjEvK-jgN9pJ6VP63ZZk1DZO7Cx-_uBWBcY-cFYckD6HGrZ3-aVfH2H0a9KE8RIfSerKDgxxInZVA0aEcKPsiXo8BS8S3UmWnRa7csAS-Qos1HNXQiYUkMrzOaCxmZM-Y', // 
+                }
+            }
+        });
+
+        // Listen for the connected event
+        Echo.connector.pusher.connection.bind('connected', () => {
+            console.log('WebSocket connection established!');
+        });
+
+        // Listen for errors
+        Echo.connector.pusher.connection.bind('error', (error) => {
+            console.error('WebSocket connection error:', error);
+        });
+
+        // Listen for events
+        Echo.join('status-update')
+            .here((users) => {
+                console.log('Users currently in the channel:', users);
+            })
+            .joining((user) => {
+                console.log('User joined:', user);
+            })
+            .leaving((user) => {
+                console.log('User left:', user);
+            })
+            .listen('UserStatusUpdateEvent', (event) => {
+                console.log('User status update event:', event);
+            });
+
+        Echo.private('broadcast-message')
+            .listen('.getChatMessage', (data) => {
+                console.log('Chat message received:', data);
+            });
+    </script>
+</body>
+</html>
